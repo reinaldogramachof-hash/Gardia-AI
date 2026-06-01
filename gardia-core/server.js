@@ -1,68 +1,98 @@
-import express from 'express';
-import cors from 'cors';
-import 'dotenv/config';
-import { chat } from './src/agents/gardia.agent.js';
-import { createClient } from '@supabase/supabase-js';
+import express from "express";
+import cors from "cors";
+import { createClient } from "@supabase/supabase-js";
+import { buildSystemPrompt, personas } from "./src/prompts/system.prompt.js";
+import "dotenv/config";
 
 const app = express();
-const PORT = process.env.GARDIA_PORT || 3001;
-
 app.use(cors());
 app.use(express.json());
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+const OLLAMA = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
+const MODEL  = process.env.OLLAMA_MODEL;
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
-// Rota de Health Check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'gardia-core' });
-});
+async function embed(text) {
+  const res = await fetch(OLLAMA + "/api/embeddings", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "nomic-embed-text", prompt: text })
+  });
+  return (await res.json()).embedding;
+}
 
-// Endpoint POST /api/chat
-app.post('/api/chat', async (req, res) => {
-  const { pergunta, contract_id, contexto = {} } = req.body;
+async function retrieveContext(query, contractId, k = 6) {
+  const emb = await embed(query);
+  const { data } = await supabase.rpc("search_knowledge", {
+    query_embedding: emb, target_contract_id: contractId, match_count: k
+  });
+  return data || [];
+}
 
-  if (!pergunta) {
-    return res.status(400).json({ error: 'A propriedade "pergunta" e obrigatoria.' });
-  }
+// Health check
+app.get("/health", (req, res) => res.json({ status: "ok", model: MODEL }));
+
+// Chat endpoint
+app.post("/api/chat", async (req, res) => {
+  const { message, contractId = null, contractName = null,
+          contractType = null, userRole = "morador",
+          userName = null, history = [] } = req.body;
+
+  if (!message) return res.status(400).json({ error: "message obrigatorio" });
 
   try {
-    let sessionContext = {
-      contractId: contract_id || null,
-      userRole: contexto.userRole || 'morador',
-      userName: contexto.userName || null,
-      history: contexto.history || []
-    };
+    // 1. RAG
+    const chunks = await retrieveContext(message, contractId);
+    const context = chunks.map((c,i) => "["+i+1+"] "+c.source_doc+":\n"+c.content).join("\n\n---\n\n");
 
-    // Se houver um contractId, buscar informacoes do contrato no Supabase para contextualizar o prompt
-    if (sessionContext.contractId) {
-      const { data: contrato, error } = await supabase
-        .from('contracts')
-        .select('name, type')
-        .eq('id', sessionContext.contractId)
-        .single();
+    // 2. System prompt
+    const persona = personas[userRole] || personas.morador;
+    const system = buildSystemPrompt({ contractName, contractType, userRole, userName })
+      + "\n\n## Estilo:\n" + persona
+      + "\n\nResponda APENAS com base nos trechos juridicos fornecidos. Cite leis e artigos especificos."
+      + "\nFormato: 1.ANALISE 2.BASE LEGAL 3.CONDUTA 4.PENALIDADE";
 
-      if (contrato && !error) {
-        sessionContext.contractName = contrato.name;
-        sessionContext.contractType = contrato.type;
-      }
-    }
+    // 3. Mensagem com contexto
+    const userMsg = chunks.length > 0
+      ? "Trechos da base juridica:\n\n" + context + "\n\n---\nCom base EXCLUSIVAMENTE nesses trechos:\n" + message
+      : message;
 
-    // Chama o agente inteligente da Gardia (RAG + Ollama)
-    const resultado = await chat(pergunta, sessionContext);
-    
-    res.json(resultado);
-  } catch (error) {
-    console.error('Erro no processamento do chat:', error);
-    res.status(500).json({
-      error: 'Erro interno ao processar a resposta da Gardia.',
-      details: error.message
+    // 4. Chamar Ollama
+    const ollamaRes = await fetch(OLLAMA + "/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODEL,
+        system,
+        messages: [...history, { role: "user", content: userMsg }],
+        stream: false,
+        options: { temperature: 0.1 }
+      })
     });
+
+    const data = await ollamaRes.json();
+    res.json({
+      resposta: data.message?.content || "Erro ao processar.",
+      fontes: chunks.map(c => c.source_doc),
+      chunks_usados: chunks.length
+    });
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
   }
 });
 
+// Status da base
+app.get("/api/knowledge/status", async (req, res) => {
+  const { count } = await supabase
+    .from("knowledge_chunks")
+    .select("*", { count: "exact", head: true });
+  res.json({ total_chunks: count, status: "ok" });
+});
+
+const PORT = process.env.GARDIA_PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`=== Servidor Gardia Core ativo na porta ${PORT} ===`);
+  console.log("Gardia Core rodando em http://localhost:" + PORT);
+  console.log("Modelo:", MODEL);
+  console.log("Supabase:", process.env.SUPABASE_URL);
 });
