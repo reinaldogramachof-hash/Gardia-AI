@@ -1,68 +1,65 @@
-﻿// Agente principal da Gardia AI
-// Orquestra: identidade → RAG → resposta
+import { buildSystemPrompt, personas } from "../prompts/system.prompt.js";
+import { retrieveContext, formatContext } from "../rag/retriever.js";
+import "dotenv/config";
 
-import { buildSystemPrompt, personas } from '../prompts/system.prompt.js'
-import { retrieveContext, formatContext } from '../rag/retriever.js'
-import 'dotenv/config'
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "qwen2.5:7b-instruct-q4_K_M";
 
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5:7b-instruct-q4_K_M'
-
-/**
- * Processa uma mensagem e retorna resposta da Gardia
- * @param {string} userMessage - Mensagem do usuário
- * @param {Object} sessionContext - Contexto da sessão (contrato, papel, histórico)
- * @returns {Promise<string>} - Resposta da Gardia
- */
 export async function chat(userMessage, sessionContext = {}) {
   const {
     contractId = null,
     contractName = null,
     contractType = null,
-    userRole = 'morador',
+    userRole = "morador",
     userName = null,
     history = []
-  } = sessionContext
+  } = sessionContext;
 
-  // 1. Recuperar contexto relevante via RAG
-  const chunks = await retrieveContext(userMessage, contractId)
-  const ragContext = formatContext(chunks)
+  // 1. Recuperar contexto RAG
+  const chunks = await retrieveContext(userMessage, contractId, 5);
 
-  // 2. Construir system prompt com contexto
-  const systemPrompt = buildSystemPrompt({
-    contractName,
-    contractType,
-    userRole,
-    userName,
-    additionalContext: ragContext
-  })
+  // 2. System prompt minimo (identidade + formato)
+  const persona = personas[userRole] || personas.morador;
+  const systemPrompt = buildSystemPrompt({ contractName, contractType, userRole, userName })
+    + "\n\n## Instrucao de estilo:\n" + persona
+    + "\n\nResponda APENAS com base nos trechos juridicos fornecidos pelo usuario."
+    + "\nNao cite artigos que nao aparecem nos trechos fornecidos."
+    + "\nFormato: 1.ANALISE 2.BASE LEGAL 3.CONDUTA 4.PENALIDADE";
 
-  // Adicionar persona do papel
-  const persona = personas[userRole] || personas.morador
-  const fullSystem = ${systemPrompt}\n\n## Instrução de estilo:\n
-
-  // 3. Montar histórico de mensagens
-  const messages = [
-    ...history,
-    { role: 'user', content: userMessage }
-  ]
-
-  // 4. Chamar Ollama
-  const response = await fetch(${OLLAMA_BASE_URL}/api/chat, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      messages,
-      system: fullSystem,
-      stream: false
-    })
-  })
-
-  if (!response.ok) {
-    throw new Error(Erro na chamada ao Ollama: )
+  // 3. Montar mensagem com contexto RAG embutido (arquitetura correta para 7B)
+  let userContent = userMessage;
+  if (chunks.length > 0) {
+    const contexto = chunks
+      .map((c, i) => `[${i+1}] ${c.source_doc}:\n${c.content}`)
+      .join("\n\n---\n\n");
+    userContent = `Trechos da base juridica relevantes:\n\n${contexto}\n\n---\nCom base EXCLUSIVAMENTE nesses trechos, responda:\n${userMessage}`;
   }
 
-  const data = await response.json()
-  return data.message?.content || 'Erro ao processar resposta.'
+  // 4. Montar historico
+  const messages = [
+    ...history,
+    { role: "user", content: userContent }
+  ];
+
+  // 5. Chamar Ollama com temperature baixa
+  const response = await fetch(OLLAMA_BASE_URL + "/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: OLLAMA_MODEL,
+      system: systemPrompt,
+      messages,
+      stream: false,
+      options: { temperature: 0.1 }
+    })
+  });
+
+  if (!response.ok) throw new Error("Erro Ollama: " + response.statusText);
+
+  const data = await response.json();
+  return {
+    resposta: data.message?.content || "Erro ao processar.",
+    chunks_usados: chunks.length,
+    fontes: chunks.map(c => c.source_doc)
+  };
 }
