@@ -1426,6 +1426,483 @@ body {
 .gardia-float-icon-btn { background: transparent !important; border: none !important; cursor: pointer !important; color: #64748b !important; padding: 6px !important; border-radius: 6px !important; display: flex !important; align-items: center !important; }
 .msg-agente-avatar { width: 28px !important; height: 28px !important; border-radius: 50% !important; background: linear-gradient(135deg,#0ea5e9,#6366f1) !important; display: flex !important; align-items: center !important; justify-content: center !important; font-weight: 700 !important; color: white !important; font-size: 13px !important; flex-shrink: 0 !important; }
 .msg-agente { display: flex !important; gap: 8px !important; align-items: flex-start !important; }
+
+/* Gardia cockpit visual replication */
+html,
+body,
+#app {
+  min-height: 100vh;
+  overflow: hidden;
+  background: #020617;
+}
+
+.gardia-ai-orb-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.96;
+}
+
+.gardia-ai-shell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.13), transparent 30rem),
+    radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0), #020617 64%),
+    #020617;
+  color: #f8fafc;
+}
+
+.gardia-ai-sidebar-host {
+  flex: 0 0 auto;
+}
+
+.gardia-ai-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 100vh;
+  min-width: 0;
+}
+
+.gardia-ai-dashboard-active .gardia-float {
+  display: none !important;
+}
+
+.gardia-ai-cockpit {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.16), transparent 28rem),
+    linear-gradient(90deg, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0.76) 48%, rgba(2, 6, 23, 0.98));
+}
+
+.gardia-ai-center {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  transition: transform 260ms ease, width 260ms ease, margin 260ms ease;
+}
+
+.gardia-ai-cockpit--left-open .gardia-ai-center {
+  width: calc(100vw - min(26vw, 360px));
+  margin-left: min(26vw, 360px);
+}
+
+.gardia-ai-cockpit--right-open .gardia-ai-center {
+  width: calc(100vw - min(31vw, 420px));
+  margin-right: min(31vw, 420px);
+}
+
+.gardia-ai-cockpit--left-open.gardia-ai-cockpit--right-open .gardia-ai-center {
+  width: calc(100vw - min(26vw, 360px) - min(31vw, 420px));
+  margin-left: min(26vw, 360px);
+  margin-right: min(31vw, 420px);
+}
+
+.gardia-ai-orb-stage {
+  position: relative;
+  width: clamp(420px, 54vw, 720px);
+  height: clamp(420px, 54vw, 720px);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.gardia-ai-orb-glow {
+  position: absolute;
+  inset: 16%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(14, 165, 233, 0.16), rgba(14, 165, 233, 0.07) 42%, transparent 70%);
+  filter: blur(22px);
+}
+
+.gardia-ai-prompt {
+  position: absolute;
+  bottom: clamp(36px, 7vh, 78px);
+  left: 50%;
+  width: min(520px, calc(100vw - 160px));
+  transform: translateX(-50%);
+  text-align: center;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.gardia-ai-prompt span {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(125, 211, 252, 0.72);
+}
+
+.gardia-ai-prompt strong {
+  display: block;
+  margin-top: 4px;
+  font-family: Poppins, sans-serif;
+  font-size: 18px;
+  color: #f8fafc;
+}
+
+.gardia-ai-prompt p {
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.gardia-ai-corner-btn,
+.gardia-ai-panel-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  background: rgba(2, 6, 23, 0.62);
+  color: rgba(226, 232, 240, 0.9);
+  box-shadow: 0 16px 42px rgba(2, 6, 23, 0.34);
+  backdrop-filter: blur(18px);
+  cursor: pointer;
+  transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.gardia-ai-corner-btn {
+  position: fixed;
+  z-index: 70;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+}
+
+.gardia-ai-corner-btn:hover,
+.gardia-ai-panel-close:hover {
+  border-color: rgba(56, 189, 248, 0.62);
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.gardia-ai-corner-btn:focus-visible,
+.gardia-ai-panel-close:focus-visible,
+.gardia-ai-tab:focus-visible,
+.gardia-ai-sidebar-item:focus-visible {
+  outline: 2px solid #7dd3fc;
+  outline-offset: 3px;
+}
+
+.gardia-ai-corner-btn svg,
+.gardia-ai-panel-close svg,
+.gardia-ai-sidebar-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+.gardia-ai-corner-btn--top-left { top: 18px; left: 20px; }
+.gardia-ai-corner-btn--top-right { top: 18px; right: 20px; }
+.gardia-ai-corner-btn--bottom-left { bottom: 20px; left: 20px; }
+.gardia-ai-corner-btn--bottom-right { bottom: 20px; right: 20px; }
+
+.gardia-ai-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  width: min(31vw, 420px);
+  min-width: 340px;
+  border-color: rgba(30, 41, 59, 0.92);
+  background: rgba(2, 6, 23, 0.92);
+  color: #f8fafc;
+  box-shadow: 0 24px 80px rgba(2, 6, 23, 0.58);
+  backdrop-filter: blur(22px);
+  transition: transform 260ms ease;
+}
+
+.gardia-ai-panel--left {
+  left: 0;
+  width: min(26vw, 360px);
+  min-width: 300px;
+  border-right: 1px solid rgba(30, 41, 59, 0.92);
+  transform: translateX(-100%);
+}
+
+.gardia-ai-panel--right {
+  right: 0;
+  border-left: 1px solid rgba(30, 41, 59, 0.92);
+  transform: translateX(100%);
+}
+
+.gardia-ai-cockpit--left-open .gardia-ai-panel--left,
+.gardia-ai-cockpit--right-open .gardia-ai-panel--right {
+  transform: translateX(0);
+}
+
+.gardia-ai-panel-header {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.92);
+}
+
+.gardia-ai-panel-header span,
+.gardia-ai-essential span,
+.gardia-ai-sidebar-group p {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.82);
+}
+
+.gardia-ai-panel-header strong {
+  display: block;
+  margin-top: 4px;
+  font-family: Poppins, sans-serif;
+  font-size: 17px;
+}
+
+.gardia-ai-panel-close {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+.gardia-ai-panel-slot {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.gardia-ai-sidebar {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.gardia-ai-essential strong {
+  display: block;
+  font-size: 14px;
+  color: #f8fafc;
+}
+
+.gardia-ai-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 0;
+}
+
+.gardia-ai-sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gardia-ai-sidebar-group p {
+  padding: 0 6px 4px;
+}
+
+.gardia-ai-sidebar-item {
+  display: flex;
+  min-height: 48px;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  padding: 10px 12px;
+  color: rgba(203, 213, 225, 0.82);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.gardia-ai-sidebar-item:hover,
+.gardia-ai-sidebar-item--active {
+  border-color: rgba(14, 165, 233, 0.48);
+  background: rgba(14, 165, 233, 0.12);
+  color: #fff;
+}
+
+.gardia-ai-essential {
+  display: grid;
+  gap: 8px;
+  margin: 0 18px 18px;
+  padding: 16px;
+  border: 1px solid rgba(14, 165, 233, 0.18);
+  border-radius: 16px;
+  background: rgba(8, 47, 73, 0.22);
+}
+
+.gardia-ai-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin: 16px 16px 0;
+  padding: 4px;
+  border: 1px solid rgba(30, 41, 59, 0.9);
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.5);
+}
+
+.gardia-ai-tab {
+  min-height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(203, 213, 225, 0.86);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gardia-ai-tab--active {
+  background: #0284c7;
+  color: #fff;
+}
+
+.gardia-ai-tab-panels {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 16px 22px;
+}
+
+.gardia-ai-tab-panels section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gardia-ai-tab-panels section[hidden] {
+  display: none;
+}
+
+.gardia-ai-event,
+.gardia-ai-check,
+.gardia-ai-message {
+  border: 1px solid rgba(30, 41, 59, 0.9);
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.44);
+  padding: 14px;
+}
+
+.gardia-ai-event {
+  display: flex;
+  gap: 12px;
+}
+
+.gardia-ai-event-dot {
+  width: 9px;
+  height: 9px;
+  margin-top: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.gardia-ai-event-dot--ok { background: #22c55e; }
+.gardia-ai-event-dot--alerta { background: #eab308; }
+.gardia-ai-event-dot--neutro { background: #38bdf8; }
+
+.gardia-ai-event strong,
+.gardia-ai-message span {
+  display: block;
+  font-size: 13px;
+  color: #f8fafc;
+}
+
+.gardia-ai-event p,
+.gardia-ai-message p,
+.gardia-ai-check p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(203, 213, 225, 0.86);
+}
+
+.gardia-ai-event small {
+  display: block;
+  margin-top: 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  color: rgba(100, 116, 139, 0.95);
+}
+
+.gardia-ai-check span {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.gardia-ai-check--urgente {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(69, 10, 10, 0.24);
+}
+
+.gardia-ai-check--urgente span {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+}
+
+.gardia-ai-check--normal span {
+  background: rgba(234, 179, 8, 0.14);
+  color: #fde047;
+}
+
+.gardia-ai-message--operador {
+  margin-left: 32px;
+  border-color: rgba(14, 165, 233, 0.32);
+  background: rgba(14, 165, 233, 0.12);
+}
+
+@media (max-width: 900px) {
+  .gardia-ai-panel,
+  .gardia-ai-panel--left,
+  .gardia-ai-panel--right {
+    width: min(86vw, 380px);
+    min-width: 0;
+  }
+
+  .gardia-ai-cockpit--left-open .gardia-ai-center,
+  .gardia-ai-cockpit--right-open .gardia-ai-center,
+  .gardia-ai-cockpit--left-open.gardia-ai-cockpit--right-open .gardia-ai-center {
+    width: 100vw;
+    margin-left: 0;
+    margin-right: 0;
+    transform: scale(0.92);
+  }
+
+  .gardia-ai-orb-stage {
+    width: min(78vw, 520px);
+    height: min(78vw, 520px);
+  }
+
+  .gardia-ai-prompt {
+    width: min(520px, calc(100vw - 112px));
+  }
+}
 .msg-porteiro { display: flex !important; justify-content: flex-end !important; }
 .msg-agente-balao { background: #1e293b !important; border-radius: 12px 12px 12px 4px !important; padding: 10px 14px !important; font-size: 13px !important; color: #e2e8f0 !important; line-height: 1.5 !important; max-width: 280px !important; }
 .msg-porteiro-balao { background: #1d4ed8 !important; border-radius: 12px 12px 4px 12px !important; padding: 10px 14px !important; font-size: 13px !important; color: #f1f5f9 !important; line-height: 1.5 !important; max-width: 280px !important; }
@@ -1437,3 +1914,102 @@ body {
 .digitando-dots span:nth-child(2) { animation-delay: .2s !important; }
 .digitando-dots span:nth-child(3) { animation-delay: .4s !important; }
 @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-6px);opacity:1} }
+
+/* Classes específicas para remover inline styles do Dashboard */
+.gardia-ai-empty-state {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  height: 100vh !important;
+  text-align: center !important;
+}
+
+.gardia-ai-empty-icon {
+  font-size: 32px !important;
+  font-weight: bold !important;
+  color: #ef4444 !important;
+  margin-bottom: 12px !important;
+}
+
+.gardia-ai-empty-title {
+  font-size: 18px !important;
+  color: #f1f5f9 !important;
+}
+
+.gardia-ai-empty-desc {
+  font-size: 13px !important;
+  color: #64748b !important;
+  margin-top: 4px !important;
+}
+
+.gardia-ai-chat-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.gardia-ai-chat-scroll {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding-bottom: 12px !important;
+  max-height: calc(100vh - 220px) !important;
+}
+
+.gardia-ai-chat-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.gardia-ai-chat-input-wrapper {
+  display: flex !important;
+  gap: 8px !important;
+  border-top: 1px solid #1e293b !important;
+  padding-top: 12px !important;
+  margin-top: auto !important;
+}
+
+.gardia-ai-chat-mic {
+  padding: 10px !important;
+  min-width: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.gardia-ai-chat-mic.gardia-ai-mic--active {
+  background: #ef4444 !important;
+}
+
+.gardia-ai-chat-input {
+  flex: 1 !important;
+  background: #0f172a !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  color: #f1f5f9 !important;
+  font-size: 13px !important;
+  outline: none !important;
+}
+
+.gardia-ai-chat-send {
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  min-height: 38px !important;
+}
+
+.gardia-ai-thinking {
+  color: #64748b !important;
+  font-style: italic !important;
+}
+
+.gardia-ai-system-message {
+  color: #f59e0b !important;
+  font-size: 12px !important;
+  text-align: center !important;
+  width: 100% !important;
+}
+

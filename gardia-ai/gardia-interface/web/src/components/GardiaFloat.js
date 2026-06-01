@@ -1,4 +1,4 @@
-import { chatComAgenteStream } from '../api/anthropic.js';
+import { chatComAgenteStream } from '../api/gardiaCoreClient.js';
 import { falarTexto, pararFala } from '../api/tts.js';
 import { db } from '../db/schema.js';
 import { ChatService } from '../services/chatService.js';

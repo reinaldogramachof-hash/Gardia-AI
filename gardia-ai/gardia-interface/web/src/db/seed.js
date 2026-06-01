@@ -25,6 +25,7 @@ export async function seedSplendorPatrianni() {
     const agora = Date.now();
     const condominioId = await db.condominios.add({
       nome: CONDOMINIO_NOME,
+      contractId: '354f5903-5f32-4e1a-b688-d2771c597696',
       endereco: 'Av. [endereço], São José dos Campos — SP',
       torres: 'Torre A e Torre B',
       totalUnidades: 80,

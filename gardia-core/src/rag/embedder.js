@@ -1,4 +1,4 @@
-﻿// Gerador de embeddings via Ollama (nomic-embed-text)
+// Gerador de embeddings via Ollama (nomic-embed-text)
 // Usado para vetorizar documentos e queries do RAG
 
 import 'dotenv/config'
@@ -12,7 +12,7 @@ const EMBED_MODEL = process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text'
  * @returns {Promise<number[]>} - Vetor de 768 dimensões
  */
 export async function generateEmbedding(text) {
-  const response = await fetch(${OLLAMA_BASE_URL}/api/embeddings, {
+  const response = await fetch(`${OLLAMA_BASE_URL}/api/embeddings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -22,7 +22,7 @@ export async function generateEmbedding(text) {
   })
 
   if (!response.ok) {
-    throw new Error(Erro ao gerar embedding: )
+    throw new Error('Erro ao gerar embedding: ' + response.statusText)
   }
 
   const data = await response.json()

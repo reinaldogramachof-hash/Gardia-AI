@@ -35,8 +35,9 @@ export async function chat(userMessage, sessionContext = {}) {
     userContent = `Trechos da base juridica relevantes:\n\n${contexto}\n\n---\nCom base EXCLUSIVAMENTE nesses trechos, responda:\n${userMessage}`;
   }
 
-  // 4. Montar historico
+  // 4. Montar historico com o system prompt na primeira posicao (padrao oficial Ollama /api/chat)
   const messages = [
+    { role: "system", content: systemPrompt },
     ...history,
     { role: "user", content: userContent }
   ];
@@ -47,7 +48,6 @@ export async function chat(userMessage, sessionContext = {}) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: OLLAMA_MODEL,
-      system: systemPrompt,
       messages,
       stream: false,
       options: { temperature: 0.1 }

@@ -1,4 +1,4 @@
-﻿// Recuperador de contexto via Supabase pgvector
+// Recuperador de contexto via Supabase pgvector
 // Busca os chunks mais relevantes para uma query
 
 import { createClient } from '@supabase/supabase-js'
@@ -36,17 +36,12 @@ export async function retrieveContext(query, contractId = null, matchCount = 5) 
   return data || []
 }
 
-/**
- * Formata o contexto recuperado para injetar no prompt
- * @param {Array} chunks - Chunks retornados pelo retriever
- * @returns {string} - Contexto formatado
- */
 export function formatContext(chunks) {
   if (!chunks.length) return ''
 
   const formatted = chunks
-    .map((chunk, i) => []  ()\n)
+    .map((chunk, i) => `[${i+1}] ${chunk.source_doc}:\n${chunk.content}`)
     .join('\n\n')
 
-  return ## Base de conhecimento relevante:\n
+  return `## Base de conhecimento relevante:\n\n${formatted}`
 }
