@@ -1,0 +1,1439 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ambiente Operacional (Flat Design - Portaria Desktop) */
+[data-ambiente="operacional"] {
+  --bg-base: #f0f9ff;
+  --surface: #ffffff;
+  --border: #e0f2fe;
+  background-color: var(--bg-base);
+  color: #0c4a6e;
+}
+
+/* Ambiente SÃ­ndico (azul-escuro executivo) */
+[data-ambiente="sindico"] {
+  --bg-base: #0a0d14;
+  --surface: #111827;
+  --border: #1e2a3a;
+  background-color: var(--bg-base);
+}
+
+/* Ambiente Administrativo (quente suave â€” recepÃ§Ã£o) */
+[data-ambiente="administrativo"] {
+  --bg-base: #0f0d0c;
+  --surface: #1a1614;
+  --border: #2a2118;
+  background-color: var(--bg-base);
+}
+
+/* TransiÃ§Ã£o suave ao trocar de ambiente */
+body {
+  transition: background-color 300ms ease;
+}
+
+@layer components {
+  .view-shell    { @apply max-w-2xl mx-auto px-4 pb-28 pt-4; }
+  .page-title    { @apply font-display text-2xl font-bold text-white tracking-tight; }
+  .page-header   { @apply flex items-center justify-between mb-6; }
+  .section-title { @apply font-mono text-xs uppercase tracking-widest text-surface-400 mb-3; }
+
+  .card          { @apply bg-surface-900 border border-surface-800 rounded-gardia p-4; }
+  .card-hover    { @apply card hover:border-gardia-700 hover:bg-surface-800 transition-all cursor-pointer; }
+  .card-active   { @apply card border-gardia-600 bg-gardia-900/20; }
+
+  .btn           { @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg px-4 py-2.5 transition-all duration-150 active:scale-95 select-none; }
+  .btn-primary   { @apply btn bg-gardia-600 text-white hover:bg-gardia-500 disabled:opacity-40 disabled:cursor-not-allowed; }
+  .btn-ghost     { @apply btn bg-transparent text-surface-400 border border-surface-700 hover:border-surface-500 hover:text-white; }
+  .btn-danger    { @apply btn bg-transparent text-red-400 border border-red-900/50 hover:bg-red-900/20; }
+  .btn-full      { @apply btn-primary w-full; }
+
+  .input         { @apply w-full bg-surface-800 border border-surface-700 rounded-lg px-3 py-2.5 text-white placeholder:text-surface-500 focus:outline-none focus:border-gardia-500 transition-colors text-sm; }
+  .label         { @apply block text-sm font-medium text-surface-300 mb-1.5; }
+  .input-group   { @apply flex flex-col gap-1 mb-4; }
+
+  .badge-ok      { @apply inline-flex items-center gap-1 text-xs font-medium bg-green-900/30 text-green-400 border border-green-800/40 px-2 py-0.5 rounded-full; }
+  .badge-alerta  { @apply inline-flex items-center gap-1 text-xs font-medium bg-yellow-900/30 text-yellow-400 border border-yellow-800/40 px-2 py-0.5 rounded-full; }
+  .badge-critico { @apply inline-flex items-center gap-1 text-xs font-medium bg-red-900/30 text-red-400 border border-red-800/40 px-2 py-0.5 rounded-full; }
+  .badge-neutro  { @apply inline-flex items-center gap-1 text-xs font-medium bg-surface-800 text-surface-400 border border-surface-700 px-2 py-0.5 rounded-full; }
+
+  .empty-state   { @apply flex flex-col items-center justify-center py-16 text-center; }
+  .empty-icon    { @apply text-4xl mb-3; }
+  .empty-title   { @apply text-surface-300 font-medium mb-1; }
+  .empty-desc    { @apply text-surface-500 text-sm max-w-xs; }
+
+  .skeleton      { @apply bg-surface-800 rounded-lg animate-pulse; }
+
+  .app-content--portaria {
+    @apply max-w-none px-0 pb-0 pt-0;
+  }
+
+  .portaria-shell {
+    @apply fixed inset-0 z-30 flex h-screen w-screen flex-col overflow-hidden bg-[var(--bg-base)] text-white;
+  }
+
+  .portaria-shell--sem-nav {
+    @apply h-screen;
+  }
+
+  .portaria-topbar {
+    @apply flex h-14 shrink-0 items-center justify-between border-b border-surface-800 bg-[var(--surface)] px-4;
+  }
+
+  .portaria-topbar-brand,
+  .portaria-topbar-info {
+    @apply flex min-w-0 items-center gap-2;
+  }
+
+  .portaria-topbar-logo {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gardia-600 font-display text-sm font-bold text-white;
+  }
+
+  .portaria-topbar-title {
+    @apply font-display text-sm font-bold tracking-normal text-white;
+  }
+
+  .portaria-topbar-sep,
+  .portaria-topbar-cond,
+  .portaria-topbar-porteiro,
+  .portaria-topbar-relogio {
+    @apply truncate text-xs text-surface-400;
+  }
+
+  .portaria-topbar-relogio {
+    @apply font-mono text-surface-300;
+  }
+
+  .portaria-icon-btn,
+  .portaria-topbar-btn-historico,
+  .portaria-sidebar-toggle {
+    @apply relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-surface-800 bg-surface-900 text-surface-300 transition-colors hover:border-gardia-700 hover:text-white;
+  }
+
+  .portaria-icon-btn svg,
+  .portaria-topbar-btn-historico svg,
+  .portaria-sidebar-toggle svg,
+  .sidebar-nav-btn svg,
+  .gardia-radar-ponto svg {
+    @apply h-5 w-5 shrink-0;
+  }
+
+  .portaria-topbar-badge {
+    @apply absolute -right-1 -top-1 h-5 min-w-5 items-center justify-center rounded-full bg-gardia-600 px-1 text-[10px] font-bold text-white;
+  }
+
+  .portaria-corpo {
+    @apply grid min-h-0 flex-1 grid-cols-[280px_minmax(0,1fr)_320px] overflow-hidden bg-[var(--bg-base)];
+  }
+
+  .portaria-centro,
+  .gardia-central {
+    @apply relative flex min-h-0 min-w-0 flex-col items-center overflow-hidden border-x border-surface-800 bg-surface-950;
+  }
+
+  .portaria-sidebar-esq,
+  .portaria-sidebar-dir {
+    @apply flex min-h-0 flex-col overflow-hidden bg-[var(--surface)] text-white;
+  }
+
+  .portaria-sidebar-esq {
+    @apply border-r border-surface-800;
+  }
+
+  .portaria-sidebar-dir {
+    @apply border-l border-surface-800;
+  }
+
+  .sidebar-rail-top {
+    @apply flex items-center justify-end px-3 pt-3;
+  }
+
+  .sidebar-header {
+    @apply flex min-h-14 shrink-0 items-center gap-3 border-b border-surface-800 px-4;
+  }
+
+  .sidebar-titulo {
+    @apply font-display text-sm font-semibold text-white;
+  }
+
+  .sidebar-nav {
+    @apply shrink-0 space-y-1 overflow-y-auto px-3 py-3;
+  }
+
+  .sidebar-secao-label,
+  .sidebar-section-label,
+  .modulo-secao-titulo {
+    @apply font-mono text-xs uppercase tracking-wider text-surface-400;
+  }
+
+  .sidebar-secao-label {
+    @apply px-2 pb-1 pt-2;
+  }
+
+  .sidebar-secao-label--mt {
+    @apply mt-3;
+  }
+
+  .sidebar-nav-btn {
+    @apply flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-surface-300 transition-colors hover:bg-surface-800 hover:text-white;
+  }
+
+  .sidebar-nav-btn--ativo {
+    @apply border border-gardia-700 bg-gardia-900/30 text-white;
+  }
+
+  .sidebar-modulo-conteudo {
+    @apply min-h-0 flex-1 overflow-y-auto border-t border-surface-800 p-4;
+  }
+
+  .sidebar-vazio,
+  .modulo-vazio {
+    @apply rounded-lg border border-dashed border-surface-800 p-4 text-sm text-surface-400;
+  }
+
+  .sidebar-section {
+    @apply px-4 py-4;
+  }
+
+  .sidebar-section--flex {
+    @apply min-h-0 flex-1 overflow-hidden;
+  }
+
+  .sidebar-sep {
+    @apply h-px bg-surface-800;
+  }
+
+  .sidebar-contatos,
+  .sidebar-timeline,
+  .historico-mensagens,
+  .historico-painel {
+    @apply min-h-0 space-y-3 overflow-y-auto;
+  }
+
+  .historico-painel {
+    @apply flex-1;
+  }
+
+  .historico-abas {
+    @apply grid flex-1 grid-cols-2 rounded-lg border border-surface-800 bg-surface-950 p-1;
+  }
+
+  .historico-aba {
+    @apply min-h-9 rounded-md px-3 text-xs font-medium text-surface-400 transition-colors hover:text-white;
+  }
+
+  .historico-aba--ativo {
+    @apply bg-gardia-600 text-white;
+  }
+
+  .gardia-avatar-area,
+  .gardia-orbe-wrap {
+    @apply relative mt-8 flex shrink-0 items-center justify-center;
+  }
+
+  .gardia-avatar,
+  .portaria-orbe-container {
+    @apply relative flex h-56 w-56 items-center justify-center;
+  }
+
+  .portaria-orbe-anel,
+  .portaria-orbe-campo,
+  .portaria-orbe-onda,
+  .portaria-orbe-canvas,
+  .portaria-orbe-nucleo {
+    @apply absolute rounded-full;
+  }
+
+  .portaria-orbe-anel {
+    @apply inset-5 border border-gardia-500/30;
+  }
+
+  .portaria-orbe-anel--externo {
+    @apply inset-0 border-surface-700;
+  }
+
+  .portaria-orbe-anel--inclinado {
+    @apply rotate-45;
+  }
+
+  .portaria-orbe-campo {
+    @apply inset-8 bg-gardia-900/20 blur-2xl;
+  }
+
+  .portaria-orbe-onda {
+    @apply border border-gardia-500/20;
+  }
+
+  .portaria-orbe-onda--1 { @apply inset-12; }
+  .portaria-orbe-onda--2 { @apply inset-7; }
+  .portaria-orbe-onda--3 { @apply inset-2; }
+
+  .portaria-orbe-canvas {
+    @apply inset-0 h-full w-full;
+  }
+
+  .portaria-orbe-nucleo {
+    @apply inset-16 flex items-center justify-center bg-gardia-600 shadow-2xl shadow-gardia-900/60;
+  }
+
+  .portaria-orbe-luz {
+    @apply h-14 w-14 rounded-full bg-white/80 blur-sm;
+  }
+
+  .portaria-orbe-neural,
+  .portaria-orbe-sinapse {
+    @apply absolute rounded-full bg-white/70;
+  }
+
+  .portaria-orbe-neural { @apply h-2 w-2; }
+  .portaria-orbe-neural--a { @apply left-8 top-9; }
+  .portaria-orbe-neural--b { @apply right-9 top-12; }
+  .portaria-orbe-neural--c { @apply bottom-8 left-1/2; }
+  .portaria-orbe-sinapse { @apply h-1 w-10 bg-white/30; }
+  .portaria-orbe-sinapse--1 { @apply left-9 top-14 rotate-12; }
+  .portaria-orbe-sinapse--2 { @apply right-9 top-20 -rotate-45; }
+  .portaria-orbe-sinapse--3 { @apply bottom-12 left-14 rotate-45; }
+
+  .gardia-nome {
+    @apply mt-3 font-display text-xl font-bold text-white;
+  }
+
+  .gardia-status,
+  .gardia-relogio,
+  .gardia-turno-label {
+    @apply text-xs text-surface-400;
+  }
+
+  .gardia-status-dot {
+    @apply inline-block h-2 w-2 rounded-full bg-status-ok;
+  }
+
+  .sistema-status {
+    @apply absolute right-5 top-5 flex h-4 w-4 items-center justify-center;
+  }
+
+  .sistema-status-pulso {
+    @apply absolute h-4 w-4 animate-ping rounded-full bg-status-ok/40;
+  }
+
+  .sistema-status-nucleo {
+    @apply relative h-2 w-2 rounded-full bg-status-ok;
+  }
+
+  .gardia-radar-vitais {
+    @apply absolute left-1/2 top-5 flex -translate-x-1/2 items-center gap-3;
+  }
+
+  .gardia-radar-ponto {
+    @apply flex h-11 w-11 items-center justify-center rounded-full border border-surface-800 bg-surface-900 text-surface-300 transition-colors hover:border-gardia-600 hover:text-white;
+  }
+
+  .portaria-chat-area {
+    @apply flex min-h-0 w-full max-w-3xl flex-1 flex-col px-5 pb-5;
+  }
+
+  .portaria-mensagens {
+    @apply flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-4;
+  }
+
+  .portaria-msg {
+    @apply flex max-w-[86%] flex-col gap-1 rounded-lg px-4 py-3 text-sm leading-6;
+  }
+
+  .portaria-msg--gardia,
+  .msg-agente-balao {
+    @apply self-start border border-surface-800 bg-surface-900 text-surface-100;
+  }
+
+  .portaria-msg--porteiro,
+  .msg-porteiro-balao {
+    @apply self-end bg-gardia-600 text-white;
+  }
+
+  .portaria-msg-texto,
+  .historico-msg-texto,
+  .timeline-texto {
+    @apply text-sm leading-6;
+  }
+
+  .portaria-msg-hora,
+  .msg-hora,
+  .historico-msg-hora,
+  .timeline-hora,
+  .sidebar-timeline-hora {
+    @apply font-mono text-[11px] text-surface-500;
+  }
+
+  .portaria-typing,
+  .digitando-dots {
+    @apply flex items-center gap-1 text-surface-400;
+  }
+
+  .portaria-typing-dot {
+    @apply h-1.5 w-1.5 rounded-full bg-surface-400;
+  }
+
+  .portaria-input-area,
+  .portaria-input-bar,
+  .portaria-input-wrap {
+    @apply flex shrink-0 items-center gap-2 rounded-xl border border-surface-800 bg-surface-900 p-2;
+  }
+
+  .portaria-input {
+    @apply min-h-11 flex-1 bg-transparent px-2 text-sm text-white outline-none placeholder:text-surface-500;
+  }
+
+  .portaria-input-bar .input {
+    @apply min-h-11 flex-1 border-0 bg-transparent focus:border-0;
+  }
+
+  .portaria-btn-mic,
+  .portaria-btn-send,
+  .portaria-btn-docs {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-surface-800 bg-surface-800 px-3 text-sm font-medium text-white transition-colors hover:border-gardia-600;
+  }
+
+  .portaria-btn-mic--ouvindo,
+  .portaria-btn-mic.ouvindo {
+    @apply border-gardia-500 bg-gardia-600;
+  }
+
+  .portaria-status-voz {
+    @apply shrink-0 pb-4 text-center text-xs text-surface-500;
+  }
+
+  .gardia-kpis {
+    @apply mb-3 flex shrink-0 items-center gap-3 rounded-full border border-surface-800 bg-surface-900 px-4 py-2;
+  }
+
+  .gardia-kpi {
+    @apply flex items-center gap-1 text-sm font-semibold text-white;
+  }
+
+  .gardia-kpi-label {
+    @apply text-xs font-normal text-surface-400;
+  }
+
+  .gardia-kpi-sep {
+    @apply h-4 w-px bg-surface-800;
+  }
+
+  .modulo-header {
+    @apply mb-4 flex items-center justify-between gap-3;
+  }
+
+  .modulo-titulo {
+    @apply font-display text-lg font-bold text-white;
+  }
+
+  .modulo-conteudo,
+  .modulo-lista {
+    @apply space-y-3;
+  }
+
+  .modulo-form {
+    @apply space-y-3;
+  }
+
+  .modulo-item {
+    @apply rounded-lg border border-surface-800 bg-surface-950 p-3 text-sm text-surface-100;
+  }
+
+  .modulo-item--row {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .modulo-item--critico {
+    @apply border-red-800/60 bg-red-950/20;
+  }
+
+  .modulo-badge {
+    @apply inline-flex rounded-full border border-surface-700 px-2 py-0.5 text-xs text-surface-300;
+  }
+
+  .dashboard-hero {
+    @apply mb-4 rounded-lg border border-gardia-800/60 bg-gardia-900/20 p-4;
+  }
+
+  .dashboard-hero h2 {
+    @apply mt-1 font-display text-xl font-bold text-white;
+  }
+
+  .dashboard-hero p {
+    @apply text-sm text-surface-400;
+  }
+
+  .dashboard-grid,
+  .contatos-modulo-grid,
+  .sistemas-grade,
+  .emergencias-grade {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  .dashboard-card,
+  .contato-modulo-card,
+  .sistema-card,
+  .emergencia-card,
+  .reserva-card,
+  .prestador-esperado-card,
+  .situacao-card {
+    @apply rounded-lg border border-surface-800 bg-surface-950 p-3 text-left transition-colors hover:border-gardia-700;
+  }
+
+  .dashboard-card span,
+  .dashboard-card small {
+    @apply block text-xs text-surface-400;
+  }
+
+  .dashboard-card strong {
+    @apply block font-display text-2xl text-white;
+  }
+
+  .dashboard-feed,
+  .modulo-secao,
+  .modulo-rondas,
+  .modulo-reservas,
+  .modulo-emergencias,
+  .modulo-prestadores,
+  .modulo-sistemas,
+  .modulo-situacoes,
+  .modulo-contatos {
+    @apply space-y-3;
+  }
+
+  .dashboard-sinal,
+  .sidebar-timeline-evento {
+    @apply flex gap-3 rounded-lg border border-surface-800 bg-surface-950 p-3;
+  }
+
+  .dashboard-sinal-dot,
+  .timeline-dot,
+  .ronda-status-dot {
+    @apply mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-surface-500;
+  }
+
+  .dashboard-sinal-dot--ok,
+  .ronda-status-dot--ok,
+  .timeline-dot--ok {
+    @apply bg-status-ok;
+  }
+
+  .dashboard-sinal-dot--ocorrencia,
+  .timeline-dot--ocorrencia {
+    @apply bg-status-critico;
+  }
+
+  .dashboard-sinal-dot--acesso,
+  .timeline-dot--acesso {
+    @apply bg-gardia-500;
+  }
+
+  .dashboard-sinal-dot--neutro {
+    @apply bg-status-neutro;
+  }
+
+  .instrucao-urgente,
+  .instrucao-normal,
+  .contato-card,
+  .prestador-regra,
+  .sistema-verificar-item,
+  .sistema-info-item,
+  .emergencia-passo {
+    @apply rounded-lg border border-surface-800 bg-surface-950 p-3;
+  }
+
+  .instrucao-urgente,
+  .contato-card--urgente,
+  .contato-modulo-card--urgente {
+    @apply border-red-800/60 bg-red-950/20;
+  }
+
+  .instrucao-texto,
+  .modulo-secao-texto,
+  .situacao-texto,
+  .situacao-instrucoes {
+    @apply text-sm leading-6 text-surface-100;
+  }
+
+  .instrucao-meta,
+  .contato-card-rotulo,
+  .contato-card-tipo,
+  .prestador-esperado-detalhe,
+  .sistema-info-label,
+  .emergencia-protocolo-contato-label {
+    @apply text-xs text-surface-500;
+  }
+
+  .contato-card-tel,
+  .prestador-tel,
+  .sistema-info-valor,
+  .emergencia-protocolo-contato {
+    @apply text-sm font-semibold text-white;
+  }
+
+  .ronda-status-bar,
+  .ronda-tabs,
+  .emergencias-contatos-rapidos {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .ronda-status-item,
+  .ronda-tab,
+  .emergencia-tel {
+    @apply inline-flex min-h-10 items-center gap-2 rounded-lg border border-surface-800 bg-surface-950 px-3 text-xs font-medium text-surface-300;
+  }
+
+  .ronda-tab--ativo {
+    @apply border-gardia-600 bg-gardia-900/30 text-white;
+  }
+
+  .ronda-progresso-bar {
+    @apply h-2 overflow-hidden rounded-full bg-surface-800;
+  }
+
+  .ronda-progresso-fill {
+    @apply h-full rounded-full bg-gardia-600;
+  }
+
+  .ronda-progresso-label {
+    @apply text-xs text-surface-400;
+  }
+
+  .ronda-checkpoints,
+  .reservas-lista,
+  .situacoes-lista,
+  .prestadores-esperados,
+  .prestadores-regras,
+  .sistema-verificar-lista {
+    @apply space-y-2;
+  }
+
+  .ronda-checkpoint {
+    @apply flex items-center gap-3 rounded-lg border border-surface-800 bg-surface-950 p-3;
+  }
+
+  .ronda-checkpoint--ok {
+    @apply border-green-800/50 bg-green-950/20;
+  }
+
+  .ronda-checkpoint-icone,
+  .emergencia-card-icone,
+  .sistema-card-icone,
+  .sistema-detalhe-icone,
+  .emergencia-protocolo-icone {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-800 text-lg;
+  }
+
+  .ronda-checkpoint-local,
+  .sistema-card-nome,
+  .emergencia-card-titulo,
+  .situacao-unidade,
+  .emergencia-protocolo-titulo,
+  .sistema-detalhe-titulo {
+    @apply font-semibold text-white;
+  }
+
+  .ronda-checkpoint-check {
+    @apply ml-auto text-status-ok;
+  }
+
+  .reserva-card-header,
+  .situacao-card-header,
+  .prestador-esperado-info,
+  .sistema-detalhe-header,
+  .emergencia-protocolo-header {
+    @apply flex items-start justify-between gap-3;
+  }
+
+  .reserva-card-info,
+  .reserva-card-horario,
+  .prestador-horario,
+  .sistema-detalhe-modelo,
+  .emergencia-protocolo-nota {
+    @apply text-sm text-surface-400;
+  }
+
+  .reserva-form-wrap,
+  .prestadores-registro,
+  .sistemas-detalhe,
+  .emergencias-detalhe {
+    @apply rounded-lg border border-surface-800 bg-surface-950 p-3;
+  }
+
+  .modulo-secao-titulo--spaced {
+    @apply mt-4;
+  }
+
+  .emergencia-tel--critico {
+    @apply border-red-800/60 bg-red-950/20 text-red-300;
+  }
+
+  .emergencia-tel--alerta {
+    @apply border-yellow-800/60 bg-yellow-950/20 text-yellow-300;
+  }
+
+  .emergencia-voltar {
+    @apply mb-3 inline-flex min-h-10 items-center rounded-lg border border-surface-800 px-3 text-sm text-surface-300 hover:text-white;
+  }
+
+  .emergencia-protocolo-passos {
+    @apply mt-4 space-y-2;
+  }
+
+  .emergencia-passo {
+    @apply flex gap-3;
+  }
+
+  .emergencia-passo-num,
+  .prestador-regra-num,
+  .emergencia-protocolo-num {
+    @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gardia-600 text-xs font-bold text-white;
+  }
+
+  .sistema-detalhe-grid {
+    @apply mt-4 grid grid-cols-2 gap-2;
+  }
+
+  .sistema-info-valor--ok {
+    @apply text-status-ok;
+  }
+
+  .sistema-info-valor--alerta {
+    @apply text-status-alerta;
+  }
+
+  .markdown-bullet {
+    @apply ml-4 list-disc text-sm text-surface-100;
+  }
+
+  .portaria-onboarding {
+    @apply mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-4 p-5;
+  }
+
+  .portaria-onboarding-msg {
+    @apply rounded-lg border border-surface-800 bg-surface-900 p-4 text-sm leading-6 text-surface-100;
+  }
+
+  .portaria-onboarding-input {
+    @apply input;
+  }
+
+  @media (max-width: 767px) {
+    .portaria-topbar {
+      @apply h-auto min-h-14 flex-wrap gap-2 py-2;
+    }
+
+    .portaria-corpo {
+      @apply flex;
+    }
+
+    .portaria-sidebar-esq,
+    .portaria-sidebar-dir {
+      @apply fixed bottom-0 top-0 z-40 w-[min(88vw,320px)] shadow-2xl transition-transform;
+    }
+
+    .portaria-sidebar-esq {
+      @apply left-0 -translate-x-full;
+    }
+
+    .portaria-sidebar-dir {
+      @apply right-0 translate-x-full;
+    }
+
+    .portaria-sidebar-esq.sidebar--aberta,
+    .portaria-sidebar-dir.sidebar--aberta {
+      @apply translate-x-0;
+    }
+
+    .gardia-central {
+      @apply w-full border-x-0;
+    }
+
+    .gardia-avatar,
+    .portaria-orbe-container {
+      @apply h-44 w-44;
+    }
+
+    .portaria-chat-area {
+      @apply px-3 pb-3;
+    }
+
+    .dashboard-grid,
+    .contatos-modulo-grid,
+    .sistemas-grade,
+    .emergencias-grade,
+    .sistema-detalhe-grid {
+      @apply grid-cols-1;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .portaria-sidebar-esq.sidebar--aberta,
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq {
+      @apply w-[360px];
+    }
+
+    .portaria-sidebar-dir:not(.sidebar--aberta) {
+      @apply w-16;
+    }
+
+    .portaria-sidebar-dir:not(.sidebar--aberta) .historico-abas,
+    .portaria-sidebar-dir:not(.sidebar--aberta) .historico-painel {
+      @apply hidden;
+    }
+  }
+
+  /* Portaria cockpit v2: Gardia central, sidebars ocultos e split desktop. */
+  .portaria-shell {
+    --portaria-panel-left: min(50vw, 680px);
+    --portaria-panel-right: min(34vw, 400px);
+    background:
+      radial-gradient(circle at 50% 38%, rgba(14, 165, 233, 0.18), transparent 34rem),
+      radial-gradient(circle at 50% 72%, rgba(34, 197, 94, 0.08), transparent 28rem),
+      #020617;
+    color: #f8fafc;
+  }
+
+  .portaria-topbar {
+    position: relative;
+    z-index: 55;
+    height: 64px;
+    border-color: rgba(30, 41, 59, 0.84);
+    background: rgba(2, 6, 23, 0.78);
+    backdrop-filter: blur(18px);
+  }
+
+  .portaria-topbar-logo {
+    box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.22), 0 0 28px rgba(14, 165, 233, 0.28);
+  }
+
+  .portaria-icon-btn,
+  .portaria-topbar-btn-historico,
+  .portaria-sidebar-toggle,
+  .gardia-radar-ponto,
+  .sidebar-nav-btn,
+  .historico-aba,
+  .dashboard-card,
+  .contato-modulo-card,
+  .sistema-card,
+  .emergencia-card,
+  .reserva-card,
+  .prestador-esperado-card,
+  .situacao-card {
+    cursor: pointer;
+  }
+
+  .portaria-icon-btn:focus-visible,
+  .portaria-topbar-btn-historico:focus-visible,
+  .portaria-sidebar-toggle:focus-visible,
+  .gardia-radar-ponto:focus-visible,
+  .sidebar-nav-btn:focus-visible,
+  .historico-aba:focus-visible,
+  .portaria-btn-mic:focus-visible,
+  .portaria-input-bar .input:focus-visible,
+  .btn:focus-visible {
+    outline: 2px solid #7dd3fc;
+    outline-offset: 3px;
+  }
+
+  .portaria-shell button:disabled,
+  .portaria-shell input:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+  }
+
+  .portaria-corpo {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .gardia-central {
+    width: 100%;
+    min-height: 0;
+    justify-content: center;
+    border: 0;
+    background:
+      linear-gradient(180deg, rgba(15, 23, 42, 0.1), rgba(2, 6, 23, 0.74)),
+      transparent;
+    transition: margin 260ms ease, width 260ms ease, transform 260ms ease;
+  }
+
+  .gardia-orbe-wrap {
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 0;
+  }
+
+  .gardia-orbe-eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7dd3fc;
+  }
+
+  .portaria-orbe-container {
+    width: clamp(220px, 28vw, 360px);
+    height: clamp(220px, 28vw, 360px);
+  }
+
+  .portaria-orbe-anel {
+    animation: gardia-orbit 18s linear infinite;
+  }
+
+  .portaria-orbe-anel--inclinado {
+    animation-duration: 12s;
+    animation-direction: reverse;
+  }
+
+  .portaria-orbe-onda {
+    animation: gardia-pulse 3.6s ease-in-out infinite;
+  }
+
+  .portaria-orbe-onda--2 { animation-delay: 0.45s; }
+  .portaria-orbe-onda--3 { animation-delay: 0.9s; }
+
+  .portaria-orbe-nucleo {
+    background:
+      radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.92), rgba(125, 211, 252, 0.72) 28%, rgba(14, 165, 233, 0.86) 58%, rgba(3, 105, 161, 0.92));
+    box-shadow:
+      0 0 0 1px rgba(186, 230, 253, 0.24),
+      0 0 44px rgba(14, 165, 233, 0.58),
+      0 0 90px rgba(34, 197, 94, 0.16);
+  }
+
+  .portaria-orbe-nucleo--ouvindo {
+    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4), 0 0 64px rgba(34, 197, 94, 0.52);
+  }
+
+  .portaria-orbe-nucleo--processando {
+    box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.4), 0 0 64px rgba(234, 179, 8, 0.42);
+  }
+
+  .portaria-orbe-nucleo--falando {
+    box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.44), 0 0 74px rgba(14, 165, 233, 0.62);
+  }
+
+  .portaria-chat-area {
+    flex: 0 1 236px;
+    width: min(760px, calc(100vw - 48px));
+    max-height: 236px;
+    padding: 10px 24px 0;
+  }
+
+  .portaria-mensagens {
+    min-height: 72px;
+    mask-image: linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  }
+
+  .portaria-input-bar {
+    border-color: rgba(56, 189, 248, 0.22);
+    background: rgba(15, 23, 42, 0.78);
+    box-shadow: 0 18px 52px rgba(2, 6, 23, 0.42);
+  }
+
+  .portaria-input-bar .input {
+    color: #f8fafc;
+  }
+
+  .portaria-btn-mic svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .gardia-kpis {
+    margin-top: 18px;
+    margin-bottom: 8px;
+    border-color: rgba(56, 189, 248, 0.2);
+    background: rgba(15, 23, 42, 0.64);
+  }
+
+  .portaria-status-voz {
+    padding-bottom: 18px;
+    color: #94a3b8;
+  }
+
+  .portaria-safe-state {
+    align-self: center;
+    max-width: 560px;
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    border-radius: 16px;
+    background: rgba(127, 29, 29, 0.18);
+    padding: 18px;
+    text-align: center;
+  }
+
+  .portaria-safe-state-kicker {
+    display: block;
+    margin-bottom: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #fca5a5;
+  }
+
+  .portaria-safe-state h2 {
+    font-family: Poppins, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .portaria-safe-state p,
+  .portaria-safe-state small {
+    color: #fecaca;
+  }
+
+  @keyframes gardia-orbit {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes gardia-pulse {
+    0%, 100% { opacity: 0.34; transform: scale(0.98); }
+    50% { opacity: 0.78; transform: scale(1.04); }
+  }
+
+  @media (min-width: 768px) {
+    .portaria-sidebar-esq,
+    .portaria-sidebar-dir {
+      position: fixed;
+      top: 64px;
+      bottom: 0;
+      z-index: 50;
+      width: var(--portaria-panel-right);
+      border-color: rgba(30, 41, 59, 0.88);
+      background: rgba(2, 6, 23, 0.94);
+      color: #f8fafc;
+      box-shadow: 0 24px 80px rgba(2, 6, 23, 0.58);
+      transition: transform 260ms ease, width 260ms ease;
+    }
+
+    .portaria-sidebar-esq {
+      left: 0;
+      width: var(--portaria-panel-left);
+      transform: translateX(-100%);
+    }
+
+    .portaria-sidebar-dir {
+      right: 0;
+      transform: translateX(100%);
+    }
+
+    .portaria-sidebar-esq.sidebar--aberta,
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq,
+    .portaria-sidebar-dir.sidebar--aberta {
+      transform: translateX(0);
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq {
+      display: grid;
+      width: var(--portaria-panel-left);
+      grid-template-columns: 180px minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-rail-top {
+      display: none;
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-header {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-nav {
+      grid-column: 1;
+      grid-row: 2;
+      min-height: 0;
+      overflow-y: auto;
+      border-right: 1px solid rgba(30, 41, 59, 0.88);
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-nav-btn {
+      gap: 10px;
+      padding-left: 10px;
+      padding-right: 10px;
+      font-size: 13px;
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-modulo-conteudo {
+      grid-column: 2;
+      grid-row: 2;
+      min-height: 0;
+      border-top: 0;
+      overflow-y: auto;
+    }
+
+    .portaria-shell--modulo-aberto .gardia-central {
+      width: calc(100vw - var(--portaria-panel-left));
+      margin-left: var(--portaria-panel-left);
+      transform: scale(0.96);
+      transform-origin: center;
+    }
+
+    .portaria-shell--contatos-aberto .gardia-central {
+      width: calc(100vw - var(--portaria-panel-right));
+      margin-right: var(--portaria-panel-right);
+    }
+
+    .portaria-shell--modulo-aberto.portaria-shell--contatos-aberto .gardia-central {
+      width: calc(100vw - var(--portaria-panel-left) - var(--portaria-panel-right));
+      margin-left: var(--portaria-panel-left);
+      margin-right: var(--portaria-panel-right);
+    }
+
+    .portaria-sidebar-dir:not(.sidebar--aberta) {
+      width: var(--portaria-panel-right);
+    }
+
+    .portaria-sidebar-dir:not(.sidebar--aberta) .historico-abas,
+    .portaria-sidebar-dir:not(.sidebar--aberta) .historico-painel {
+      display: flex;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portaria-shell *,
+    .portaria-shell *::before,
+    .portaria-shell *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Gardia live focus: particulas azuis como protagonista visual. */
+  .gardia-central {
+    background:
+      radial-gradient(circle at 50% 46%, rgba(14, 165, 233, 0.2), transparent 30rem),
+      radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0.24), rgba(2, 6, 23, 0.96) 56%),
+      #020617;
+  }
+
+  .gardia-radar-vitais,
+  .gardia-kpis {
+    display: none;
+  }
+
+  .gardia-orbe-wrap {
+    gap: 20px;
+  }
+
+  .gardia-orbe-eyebrow {
+    color: rgba(186, 230, 253, 0.9);
+    text-shadow: 0 0 18px rgba(14, 165, 233, 0.42);
+  }
+
+  .portaria-orbe-container {
+    width: clamp(340px, 42vw, 620px);
+    height: clamp(340px, 42vw, 620px);
+    filter: drop-shadow(0 0 46px rgba(14, 165, 233, 0.18));
+  }
+
+  .portaria-orbe-canvas {
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+  }
+
+  .portaria-orbe-anel,
+  .portaria-orbe-campo,
+  .portaria-orbe-onda,
+  .portaria-orbe-nucleo {
+    display: none;
+  }
+
+  .portaria-chat-area {
+    flex-basis: 156px;
+    max-height: 156px;
+    transform: translateY(-14px);
+  }
+
+  .portaria-mensagens {
+    min-height: 34px;
+    max-height: 52px;
+    justify-content: center;
+    opacity: 0.72;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .msg-agente,
+  .msg-porteiro {
+    justify-content: center;
+  }
+
+  .msg-agente-avatar,
+  .msg-hora {
+    display: none;
+  }
+
+  .msg-agente-balao,
+  .msg-porteiro-balao {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: center;
+    color: rgba(226, 232, 240, 0.82);
+  }
+
+  .portaria-input-bar {
+    margin-inline: auto;
+    width: min(640px, calc(100vw - 48px));
+    border-color: rgba(14, 165, 233, 0.34);
+    background: rgba(2, 6, 23, 0.62);
+  }
+
+  .portaria-status-voz {
+    color: rgba(186, 230, 253, 0.74);
+  }
+
+  .portaria-shell--modulo-aberto .portaria-orbe-container,
+  .portaria-shell--contatos-aberto .portaria-orbe-container {
+    width: clamp(260px, 31vw, 460px);
+    height: clamp(260px, 31vw, 460px);
+  }
+
+  .portaria-shell--modulo-aberto .portaria-chat-area,
+  .portaria-shell--contatos-aberto .portaria-chat-area {
+    width: min(680px, calc(100vw - 48px));
+  }
+
+  /* Validacao visual temporaria: somente a poeira digital da Gardia. */
+  .gardia-orbe-eyebrow,
+  .portaria-chat-area,
+  .portaria-status-voz,
+  .sistema-status,
+  #toast-container {
+    display: none;
+  }
+
+  .portaria-topbar {
+    display: contents;
+  }
+
+  .portaria-topbar-logo,
+  .portaria-topbar-title,
+  .portaria-topbar-sep,
+  .portaria-topbar-cond,
+  .portaria-topbar-porteiro,
+  .portaria-topbar-relogio,
+  .portaria-topbar-btn-tema,
+  #btn-consultar-documentos {
+    display: none;
+  }
+
+  .portaria-topbar-brand,
+  .portaria-topbar-info {
+    display: contents;
+  }
+
+  .portaria-topbar-btn-modulos,
+  #btn-abrir-historico {
+    position: fixed;
+    top: 14px;
+    z-index: 60;
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    border-color: rgba(125, 211, 252, 0.2);
+    border-radius: 14px;
+    background: rgba(2, 6, 23, 0.6);
+    color: rgba(226, 232, 240, 0.9);
+    box-shadow: 0 16px 42px rgba(2, 6, 23, 0.34);
+    backdrop-filter: blur(18px);
+    pointer-events: auto;
+  }
+
+  .portaria-topbar-btn-modulos {
+    left: 16px;
+  }
+
+  #btn-abrir-historico {
+    right: 16px;
+  }
+
+  .portaria-topbar-btn-modulos:hover,
+  #btn-abrir-historico:hover {
+    border-color: rgba(56, 189, 248, 0.62);
+    color: #fff;
+  }
+
+  .portaria-topbar-badge {
+    display: none !important;
+  }
+
+  .portaria-corner-actions {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 60;
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    pointer-events: none;
+  }
+
+  .portaria-corner-btn {
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    border-radius: 14px;
+    background: rgba(2, 6, 23, 0.6);
+    color: rgba(226, 232, 240, 0.9);
+    box-shadow: 0 16px 42px rgba(2, 6, 23, 0.34);
+    backdrop-filter: blur(18px);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease;
+  }
+
+  .portaria-corner-btn:hover {
+    border-color: rgba(56, 189, 248, 0.62);
+    background: rgba(15, 23, 42, 0.78);
+    color: #fff;
+  }
+
+  .portaria-corner-btn:focus-visible {
+    outline: 2px solid #7dd3fc;
+    outline-offset: 3px;
+  }
+
+  .portaria-corner-btn svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .portaria-shell {
+    background: #020617;
+  }
+
+  .portaria-corpo,
+  .gardia-central {
+    min-height: 100vh;
+  }
+
+  .gardia-central {
+    justify-content: center;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.14), transparent 28rem),
+      #020617;
+  }
+
+  .portaria-orbe-container {
+    width: clamp(420px, 54vw, 720px);
+    height: clamp(420px, 54vw, 720px);
+  }
+
+  .portaria-sidebar-esq .sidebar-rail-top,
+  .portaria-sidebar-esq .sidebar-header .portaria-icon-btn {
+    display: none;
+  }
+
+  .portaria-sidebar-esq .sidebar-header {
+    min-height: 58px;
+    justify-content: flex-start;
+    padding: 0 22px;
+  }
+
+  .portaria-sidebar-dir .historico-abas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @media (min-width: 768px) {
+    .portaria-sidebar-esq.sidebar--aberta {
+      width: min(22vw, 280px);
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq {
+      width: min(48vw, 700px);
+      grid-template-columns: 112px minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-header {
+      display: none;
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-nav {
+      grid-column: 1;
+      grid-row: 1;
+      padding: 10px 8px;
+      border-right: 1px solid rgba(30, 41, 59, 0.88);
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-modulo-conteudo {
+      grid-column: 2;
+      grid-row: 1;
+      padding: 20px;
+      border-top: 0;
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-nav-btn {
+      min-height: 54px;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      padding: 8px 4px;
+      font-size: 11px;
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-nav-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .portaria-shell--modulo-aberto .portaria-sidebar-esq .sidebar-secao-label {
+      padding: 10px 0 4px;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .portaria-shell--modulo-aberto .gardia-central {
+      width: calc(100vw - min(48vw, 700px));
+      margin-left: min(48vw, 700px);
+    }
+  }
+}
+
+/* GardiaFloat fix — posicionamento */
+.gardia-float { position: fixed !important; bottom: 24px !important; right: 24px !important; z-index: 9999 !important; }
+.gardia-float-btn { width: 52px !important; height: 52px !important; border-radius: 50% !important; background: linear-gradient(135deg,#0ea5e9,#6366f1) !important; border: none !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; color: white !important; font-size: 20px !important; font-weight: 700 !important; box-shadow: 0 4px 20px rgba(14,165,233,0.4) !important; }
+.gardia-float-drawer { position: fixed !important; bottom: 90px !important; right: 24px !important; width: 380px !important; max-height: 520px !important; background: #0b1120 !important; border: 1px solid #1e293b !important; border-radius: 16px !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; z-index: 9998 !important; transform: translateY(20px) !important; opacity: 0 !important; pointer-events: none !important; transition: all 0.2s ease !important; }
+.gardia-float--open .gardia-float-drawer { transform: translateY(0) !important; opacity: 1 !important; pointer-events: all !important; }
+.gardia-float-overlay { display: none !important; }
+.gardia-float-msgs { flex: 1 !important; overflow-y: auto !important; padding: 16px !important; display: flex !important; flex-direction: column !important; gap: 12px !important; min-height: 200px !important; max-height: 340px !important; }
+.gardia-float-header { padding: 14px 16px !important; border-bottom: 1px solid #1e293b !important; display: flex !important; align-items: center !important; justify-content: space-between !important; }
+.gardia-float-title { display: flex !important; align-items: center !important; gap: 10px !important; font-weight: 600 !important; color: #f1f5f9 !important; }
+.gardia-float-input { padding: 12px !important; border-top: 1px solid #1e293b !important; display: flex !important; gap: 8px !important; align-items: center !important; }
+.gardia-float-input .input { flex: 1 !important; background: #1e293b !important; border: 1px solid #334155 !important; border-radius: 10px !important; padding: 10px 14px !important; color: #f1f5f9 !important; font-size: 14px !important; outline: none !important; }
+.gardia-float-icon-btn { background: transparent !important; border: none !important; cursor: pointer !important; color: #64748b !important; padding: 6px !important; border-radius: 6px !important; display: flex !important; align-items: center !important; }
+.msg-agente-avatar { width: 28px !important; height: 28px !important; border-radius: 50% !important; background: linear-gradient(135deg,#0ea5e9,#6366f1) !important; display: flex !important; align-items: center !important; justify-content: center !important; font-weight: 700 !important; color: white !important; font-size: 13px !important; flex-shrink: 0 !important; }
+.msg-agente { display: flex !important; gap: 8px !important; align-items: flex-start !important; }
+.msg-porteiro { display: flex !important; justify-content: flex-end !important; }
+.msg-agente-balao { background: #1e293b !important; border-radius: 12px 12px 12px 4px !important; padding: 10px 14px !important; font-size: 13px !important; color: #e2e8f0 !important; line-height: 1.5 !important; max-width: 280px !important; }
+.msg-porteiro-balao { background: #1d4ed8 !important; border-radius: 12px 12px 4px 12px !important; padding: 10px 14px !important; font-size: 13px !important; color: #f1f5f9 !important; line-height: 1.5 !important; max-width: 280px !important; }
+.msg-hora { font-size: 10px !important; color: #475569 !important; margin-top: 4px !important; }
+.msg-sistema { font-size: 11px !important; color: #64748b !important; text-align: center !important; padding: 4px !important; }
+.btn-primary { background: linear-gradient(135deg,#0ea5e9,#6366f1) !important; border: none !important; border-radius: 10px !important; padding: 10px 16px !important; color: white !important; font-size: 13px !important; font-weight: 600 !important; cursor: pointer !important; }
+.digitando-dots { display: flex !important; gap: 4px !important; }
+.digitando-dots span { width: 6px !important; height: 6px !important; border-radius: 50% !important; background: #38bdf8 !important; animation: bounce 1.2s infinite !important; }
+.digitando-dots span:nth-child(2) { animation-delay: .2s !important; }
+.digitando-dots span:nth-child(3) { animation-delay: .4s !important; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-6px);opacity:1} }

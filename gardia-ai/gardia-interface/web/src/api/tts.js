@@ -1,0 +1,1 @@
+export function falarTexto(t){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="pt-BR";u.rate=1.1;window.speechSynthesis.speak(u);}export function pararFala(){window.speechSynthesis?.cancel();}
