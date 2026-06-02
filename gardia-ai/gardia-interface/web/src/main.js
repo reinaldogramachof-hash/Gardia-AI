@@ -4,12 +4,10 @@ import { applyMigrations } from "./db/migrations.js";
 import { seedSplendorPatrianni } from "./db/seed.js";
 import router from "./router.js";
 import { iniciarOrbeGardia } from "./utils/gardiaOrb.js";
-import { GardiaFloat } from "./components/GardiaFloat.js";
 import { logger } from "./utils/logger.js";
 import createPlaceholderView from "./views/PlaceholderView.js";
 
 const appRoot = document.querySelector("#app");
-let gardiaFloatEl = null;
 window.gardiaStatus = window.gardiaStatus || "inativo";
 window.gardiaStatusVoz = window.gardiaStatusVoz || "inativo";
 window.gardiaCursorX = window.gardiaCursorX ?? 0.5;
@@ -62,9 +60,6 @@ async function bootstrap() {
     iniciarOrbeGardia(canvas, () => window.gardiaStatus || window.gardiaStatusVoz || "inativo");
   });
 
-  gardiaFloatEl = GardiaFloat();
-  document.body.appendChild(gardiaFloatEl);
-
   router.onRoute(({ route }) => renderRoute(route));
 
   const rawHash = window.location.hash.replace(/^#/, '');
@@ -94,10 +89,14 @@ function renderShell() {
   shell.className = "gardia-ai-shell";
   shell.setAttribute("data-ambiente", "operacional");
 
+  const zonaOrbe = document.createElement("div");
+  zonaOrbe.className = "gardia-zona-orbe";
+
   const main = document.createElement("main");
   main.id = "app-content";
   main.className = "gardia-ai-content";
 
+  shell.appendChild(zonaOrbe);
   shell.appendChild(renderVoiceShortcut());
   shell.appendChild(main);
   appRoot.appendChild(shell);
@@ -117,7 +116,16 @@ function renderVoiceShortcut() {
       </span>
     </button>
     <span class="gardia-voice-hint">pressione espaco para falar</span>
+    <span id="gardia-turno-clock" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 10px; line-height: 1.2; color: rgba(148,163,184,0.35);"></span>
   `;
+
+  const clock = shortcut.querySelector("#gardia-turno-clock");
+  const updateClock = () => {
+    if (!clock) return;
+    clock.textContent = `${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} · Turno ativo`;
+  };
+  updateClock();
+  window.setInterval(updateClock, 60000);
 
   shortcut.querySelector("#gardia-voice-shortcut-btn")?.addEventListener("click", () => {
     if (window._gardiaRec) {
@@ -150,7 +158,6 @@ async function renderRoute(route) {
   el.innerHTML = "";
 
   aplicarModoVisual(route);
-  gardiaFloatEl?.classList.toggle("hidden", route === "/dashboard");
 
   const viewRoot = await loadView(route);
   if (viewRoot) {
@@ -164,9 +171,11 @@ async function renderRoute(route) {
 
 function aplicarModoVisual(route) {
   const isDashboard = route === "/dashboard";
+  const zonaOrbe = document.querySelector(".gardia-zona-orbe");
 
   document.body.classList.toggle("gardia-ai-dashboard-active", isDashboard);
   document.body.classList.toggle("gardia-ai-module-active", !isDashboard);
+  zonaOrbe?.classList.toggle("gardia-zona-orbe--ativa", !isDashboard);
 
   if (isDashboard) {
     window.gardiaOrbScale = 1;
@@ -177,7 +186,7 @@ function aplicarModoVisual(route) {
 
   window.gardiaOrbScale = 0.45;
   window.gardiaOrbOffsetX = -(window.innerWidth / 2 - 160);
-  window.gardiaOrbOffsetY = 0;
+  window.gardiaOrbOffsetY = -30;
 }
 
 function renderModuleShell(route, viewRoot) {
@@ -191,15 +200,22 @@ function renderModuleShell(route, viewRoot) {
         <span class="gardia-module-icon" aria-hidden="true">${meta.icon}</span>
         <strong>${meta.title}</strong>
       </div>
-      <button class="gardia-module-back" type="button">← Voltar</button>
+      <button class="gardia-module-back" type="button">
+        ${iconBack()}
+        <span>Voltar</span>
+      </button>
     </header>
-    <div class="gardia-module-body"></div>
+    <div class="gardia-module-content"></div>
   `;
 
   shell.querySelector(".gardia-module-back")?.addEventListener("click", () => router.push("/dashboard"));
-  shell.querySelector(".gardia-module-body")?.appendChild(viewRoot);
+  shell.querySelector(".gardia-module-content")?.appendChild(viewRoot);
 
   return shell;
+}
+
+function iconBack() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/><path d="M21 12H9"/></svg>';
 }
 
 function getModuleMeta(route) {

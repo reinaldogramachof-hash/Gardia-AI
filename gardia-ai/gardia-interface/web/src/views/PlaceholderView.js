@@ -1,4 +1,6 @@
-function createCard({ icon, title, description }) {
+const DEFAULT_DESCRIPTION = 'Este módulo está em construção e será ativado em breve.';
+
+function createCard({ icon, title, description = DEFAULT_DESCRIPTION }) {
   const root = document.createElement('section');
   root.className = 'gardia-view-shell gardia-view-page';
 
@@ -6,7 +8,7 @@ function createCard({ icon, title, description }) {
     <div class="card gardia-view-card">
       <div class="gardia-view-icon" aria-hidden="true">${icon}</div>
       <h1 class="gardia-view-title">${title}</h1>
-      <p class="gardia-view-subtitle">${description}</p>
+      <p class="gardia-view-subtitle">${description === 'Em desenvolvimento 🚧' ? DEFAULT_DESCRIPTION : description}</p>
     </div>
   `;
 
