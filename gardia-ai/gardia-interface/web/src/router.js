@@ -1,7 +1,20 @@
 const ROUTE_PATTERNS = [
   '/',
-  '/onboarding',
   '/dashboard',
+  '/ocorrencias',
+  '/acesso',
+  '/rondas',
+  '/reservas',
+  '/zeladoria',
+  '/limpeza',
+  '/manutencao',
+  '/moradores',
+  '/prestadores',
+  '/instrucoes',
+  '/emergencias',
+  '/gardia-ai',
+  '/configuracoes',
+  '/onboarding',
   '/condominio/list',
   '/condominio/novo',
   '/condominio/:id',
@@ -22,12 +35,26 @@ const ROUTE_PATTERNS = [
   '/admin/documentos',
   '/admin/solicitacoes',
   '/relatorio/turno/:coberturaId',
+  '/visitantes',
+  '/cameras',
 ];
+
+const ROUTE_ALIASES = {
+  '/': '/dashboard',
+  '/ocorrencia/list': '/ocorrencias',
+  '/ronda/list': '/rondas',
+  '/gardia': '/gardia-ai',
+};
 
 function normalizeRoute(route) {
   const value = String(route || '/').trim();
   const withPrefix = value.startsWith('/') ? value : `/${value}`;
   return withPrefix.replace(/\/+$/g, '') || '/';
+}
+
+function resolveRoute(route) {
+  const normalized = normalizeRoute(route);
+  return ROUTE_ALIASES[normalized] || normalized;
 }
 
 function splitRoute(route) {
@@ -59,7 +86,7 @@ function extractParams(pattern, route) {
 
 export function getCurrentRoute() {
   const hash = window.location.hash.replace(/^#/, '');
-  return normalizeRoute(hash || '/');
+  return resolveRoute(hash || '/dashboard');
 }
 
 export function getParams() {
@@ -69,7 +96,7 @@ export function getParams() {
 }
 
 export function push(route) {
-  const nextRoute = normalizeRoute(route);
+  const nextRoute = resolveRoute(route);
   const nextHash = `#${nextRoute}`;
 
   if (window.location.hash === nextHash) {
@@ -78,7 +105,6 @@ export function push(route) {
   }
 
   window.location.hash = nextHash;
-  window.dispatchEvent(new CustomEvent('routechange', { detail: { route: nextRoute, params: getParams() } }));
 }
 
 export function back() {
@@ -114,6 +140,7 @@ export const router = {
   onRoute,
   getParams,
   getCurrentRoute,
+  resolveRoute,
 };
 
 export default router;
