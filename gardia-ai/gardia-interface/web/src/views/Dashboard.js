@@ -152,9 +152,14 @@ function bind(root, estado) {
       enviarMensagem(root, estado);
     }
   });
-
   const closeLeft = () => closePanel(root, 'left');
   const hideCenterText = () => root.querySelector('.gardia-center-text')?.classList.add('gardia-center-text--hidden');
+  const enviarVoz = (event) => {
+    const texto = event.detail?.texto;
+    if (!texto) return;
+
+    enviarMensagem(root, estado, texto);
+  };
   const closeFloatingOutside = (event) => {
     if (!root.contains(event.target)) return;
     if (event.target.closest('.gardia-ai-corner-btn, .gardia-ai-floating-panel')) return;
@@ -162,10 +167,12 @@ function bind(root, estado) {
   };
   window.addEventListener('gardia-ai-close-left-panel', closeLeft);
   window.addEventListener('gardia:center-text-hide', hideCenterText);
+  window.addEventListener('gardia:voz', enviarVoz);
   document.addEventListener('click', closeFloatingOutside);
   root._cleanup = () => {
     window.removeEventListener('gardia-ai-close-left-panel', closeLeft);
     window.removeEventListener('gardia:center-text-hide', hideCenterText);
+    window.removeEventListener('gardia:voz', enviarVoz);
     document.removeEventListener('click', closeFloatingOutside);
     window.gardiaOrbScale = 1;
     setGardiaStatus('inativo');
@@ -233,13 +240,14 @@ function ativarAba(root, aba) {
   });
 }
 
-async function enviarMensagem(root, estado) {
+async function enviarMensagem(root, estado, textoForcado = null) {
   if (estado.streamingAtivo) return;
 
   const input = root.querySelector('#gardia-chat-input');
-  const texto = (input?.value || '').trim();
+  const texto = ((textoForcado ?? input?.value) || '').trim();
   if (!texto) return;
 
+  if (input && textoForcado) input.value = texto;
   if (input) input.value = '';
   
   // 1. Salvar e adicionar mensagem do operador
@@ -543,12 +551,8 @@ function template(estado) {
       <div class="gardia-ai-orb-stage">
         <div class="gardia-ai-orb-glow"></div>
       </div>
-      <div class="gardia-ai-prompt gardia-center-text">
-        <span>Gardia</span>
-        <strong>Centro operacional da portaria</strong>
-        <p>Monitorando ocorrencias, rondas, alertas e contratos do condominio.</p>
-      </div>
     </main>
+
   `;
 }
 

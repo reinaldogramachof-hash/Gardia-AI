@@ -138,10 +138,17 @@ body,
   padding: 28px;
   overflow: auto;
   background: transparent;
+  transition: margin-left 400ms ease, padding 400ms ease;
 }
 
 .gardia-ai-dashboard-active .gardia-float {
   display: none !important;
+}
+
+.gardia-ai-module-active .gardia-ai-content {
+  margin-left: 320px;
+  padding: 0;
+  overflow-y: auto;
 }
 
 .gardia-ai-cockpit {
@@ -213,6 +220,100 @@ body,
 .gardia-center-text--hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+.gardia-voice-shortcut {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  transform: translateX(-50%);
+  transition: left 400ms ease, bottom 400ms ease;
+}
+
+.gardia-ai-module-active .gardia-voice-shortcut {
+  left: 160px;
+  bottom: 20px;
+}
+
+.gardia-voice-shortcut-btn {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.1);
+  color: #38bdf8;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.gardia-voice-shortcut-btn:hover {
+  border-color: rgba(14, 165, 233, 0.45);
+  background: rgba(14, 165, 233, 0.2);
+}
+
+.gardia-voice-shortcut-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.gardia-voice-hint {
+  max-width: 120px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  color: rgba(148, 163, 184, 0.45);
+  text-align: center;
+}
+
+.gardia-voice-icon--wave {
+  display: none;
+  align-items: center;
+  gap: 3px;
+}
+
+.gardia-voice-icon--wave span {
+  width: 3px;
+  height: 14px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: gardia-voice-wave 720ms ease-in-out infinite;
+}
+
+.gardia-voice-icon--wave span:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.gardia-voice-icon--wave span:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.gardia-voice-active .gardia-voice-shortcut-btn {
+  border-color: #38bdf8;
+  background: rgba(14, 165, 233, 0.3);
+  box-shadow: 0 0 16px rgba(14, 165, 233, 0.4);
+}
+
+.gardia-voice-active .gardia-voice-icon--mic {
+  display: none;
+}
+
+.gardia-voice-active .gardia-voice-icon--wave {
+  display: inline-flex;
+}
+
+@keyframes gardia-voice-wave {
+  0%, 100% { transform: scaleY(0.45); opacity: 0.55; }
+  50% { transform: scaleY(1); opacity: 1; }
 }
 
 .gardia-ai-prompt span {
@@ -795,6 +896,67 @@ body,
   align-items: center;
   justify-content: center;
   padding: 28px;
+}
+
+.gardia-module-shell {
+  min-height: 100vh;
+  animation: gardia-module-in 200ms ease both;
+}
+
+.gardia-module-topbar {
+  display: flex;
+  height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(11, 17, 32, 0.6);
+  padding: 0 24px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.gardia-module-title {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  color: #f8fafc;
+}
+
+.gardia-module-title strong {
+  font-family: Poppins, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.gardia-module-icon {
+  display: inline-flex;
+  width: 24px;
+  justify-content: center;
+  color: #38bdf8;
+}
+
+.gardia-module-back {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.gardia-module-back:hover {
+  color: #fff;
+}
+
+.gardia-module-body {
+  min-height: calc(100vh - 52px);
+  padding: 28px 32px;
+}
+
+@keyframes gardia-module-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .gardia-view-page {

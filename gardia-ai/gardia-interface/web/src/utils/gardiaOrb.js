@@ -9,6 +9,8 @@ export function iniciarOrbeGardia(canvas, obterStatus = () => 'inativo') {
   const dinamica = {
     offsetX: 0,
     offsetY: 0,
+    layoutOffsetX: 0,
+    layoutOffsetY: 0,
     scale: 1,
     pulse: 0,
     pulseStart: 0,
@@ -71,10 +73,14 @@ function atualizarDinamica(dinamica, canvas, agora) {
   const dpr = window.devicePixelRatio || 1;
   const cursorX = (window.gardiaCursorX ?? 0.5) - 0.5;
   const cursorY = (window.gardiaCursorY ?? 0.5) - 0.5;
+  const alvoLayoutX = (window.gardiaOrbOffsetX || 0) * dpr;
+  const alvoLayoutY = (window.gardiaOrbOffsetY || 0) * dpr;
   const alvoX = cursorX * 60 * dpr;
   const alvoY = cursorY * 60 * dpr;
   const alvoScale = Number.isFinite(window.gardiaOrbScale) ? window.gardiaOrbScale : 1;
 
+  dinamica.layoutOffsetX += (alvoLayoutX - dinamica.layoutOffsetX) * 0.04;
+  dinamica.layoutOffsetY += (alvoLayoutY - dinamica.layoutOffsetY) * 0.04;
   dinamica.offsetX += (alvoX - dinamica.offsetX) * 0.03;
   dinamica.offsetY += (alvoY - dinamica.offsetY) * 0.03;
   dinamica.scale += (alvoScale - dinamica.scale) * 0.05;
@@ -88,8 +94,8 @@ function atualizarDinamica(dinamica, canvas, agora) {
 function renderizar(ctx, canvas, particulas, tempo, status, dinamica) {
   const width = canvas.width;
   const height = canvas.height;
-  const cx = width / 2 + dinamica.offsetX;
-  const cy = height / 2 + dinamica.offsetY;
+  const cx = width / 2 + dinamica.layoutOffsetX + dinamica.offsetX;
+  const cy = height / 2 + dinamica.layoutOffsetY + dinamica.offsetY;
   const base = Math.min(width, height) * 0.34 * dinamica.scale * (1 + dinamica.pulse * 0.05);
   const estado = estadoVisual(status);
   const pulso = (Math.sin(tempo * estado.pulso) + 1) / 2;

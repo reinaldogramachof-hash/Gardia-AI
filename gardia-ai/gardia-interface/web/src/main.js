@@ -15,6 +15,8 @@ window.gardiaStatusVoz = window.gardiaStatusVoz || "inativo";
 window.gardiaCursorX = window.gardiaCursorX ?? 0.5;
 window.gardiaCursorY = window.gardiaCursorY ?? 0.5;
 window.gardiaOrbScale = window.gardiaOrbScale ?? 1;
+window.gardiaOrbOffsetX = window.gardiaOrbOffsetX ?? 0;
+window.gardiaOrbOffsetY = window.gardiaOrbOffsetY ?? 0;
 
 const viewLoaders = {
   '/dashboard': () => import("./views/Dashboard.js"),
@@ -52,6 +54,8 @@ async function bootstrap() {
     window.gardiaCursorX = e.clientX / window.innerWidth;
     window.gardiaCursorY = e.clientY / window.innerHeight;
   });
+  window.addEventListener("resize", () => aplicarModoVisual(router.getCurrentRoute()));
+  registrarAtalhoVoz();
 
   requestAnimationFrame(() => {
     console.log("Canvas:", canvas.offsetWidth, canvas.offsetHeight);
@@ -94,10 +98,40 @@ function renderShell() {
   main.id = "app-content";
   main.className = "gardia-ai-content";
 
+  shell.appendChild(renderVoiceShortcut());
   shell.appendChild(main);
   appRoot.appendChild(shell);
 
   return canvas;
+}
+
+function renderVoiceShortcut() {
+  const shortcut = document.createElement("div");
+  shortcut.className = "gardia-voice-shortcut";
+  shortcut.setAttribute("aria-label", "Atalho de voz");
+  shortcut.innerHTML = `
+    <button id="gardia-voice-shortcut-btn" class="gardia-voice-shortcut-btn" type="button" aria-label="Pressione espaco para falar">
+      <span class="gardia-voice-icon gardia-voice-icon--mic">${iconMic()}</span>
+      <span class="gardia-voice-icon gardia-voice-icon--wave" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </span>
+    </button>
+    <span class="gardia-voice-hint">pressione espaco para falar</span>
+  `;
+
+  shortcut.querySelector("#gardia-voice-shortcut-btn")?.addEventListener("click", () => {
+    if (window._gardiaRec) {
+      pararReconhecimentoVoz();
+    } else {
+      iniciarReconhecimentoVoz();
+    }
+  });
+
+  return shortcut;
+}
+
+function iconMic() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>';
 }
 
 async function renderRoute(route) {
@@ -115,14 +149,139 @@ async function renderRoute(route) {
 
   el.innerHTML = "";
 
-  document.body.classList.toggle("gardia-ai-dashboard-active", route === "/dashboard");
+  aplicarModoVisual(route);
   gardiaFloatEl?.classList.toggle("hidden", route === "/dashboard");
 
   const viewRoot = await loadView(route);
   if (viewRoot) {
-    el.appendChild(viewRoot);
+    if (route === "/dashboard") {
+      el.appendChild(viewRoot);
+    } else {
+      el.appendChild(renderModuleShell(route, viewRoot));
+    }
   }
 }
+
+function aplicarModoVisual(route) {
+  const isDashboard = route === "/dashboard";
+
+  document.body.classList.toggle("gardia-ai-dashboard-active", isDashboard);
+  document.body.classList.toggle("gardia-ai-module-active", !isDashboard);
+
+  if (isDashboard) {
+    window.gardiaOrbScale = 1;
+    window.gardiaOrbOffsetX = 0;
+    window.gardiaOrbOffsetY = 0;
+    return;
+  }
+
+  window.gardiaOrbScale = 0.45;
+  window.gardiaOrbOffsetX = -(window.innerWidth / 2 - 160);
+  window.gardiaOrbOffsetY = 0;
+}
+
+function renderModuleShell(route, viewRoot) {
+  const shell = document.createElement("section");
+  shell.className = "gardia-module-shell";
+
+  const meta = getModuleMeta(route);
+  shell.innerHTML = `
+    <header class="gardia-module-topbar">
+      <div class="gardia-module-title">
+        <span class="gardia-module-icon" aria-hidden="true">${meta.icon}</span>
+        <strong>${meta.title}</strong>
+      </div>
+      <button class="gardia-module-back" type="button">← Voltar</button>
+    </header>
+    <div class="gardia-module-body"></div>
+  `;
+
+  shell.querySelector(".gardia-module-back")?.addEventListener("click", () => router.push("/dashboard"));
+  shell.querySelector(".gardia-module-body")?.appendChild(viewRoot);
+
+  return shell;
+}
+
+function getModuleMeta(route) {
+  const map = {
+    "/ocorrencias": { icon: "⚠", title: "Ocorrências" },
+    "/acesso": { icon: "↔", title: "Acesso" },
+    "/rondas": { icon: "◎", title: "Rondas" },
+    "/reservas": { icon: "☰", title: "Reservas" },
+    "/zeladoria": { icon: "🔧", title: "Zeladoria" },
+    "/limpeza": { icon: "✦", title: "Limpeza" },
+    "/manutencao": { icon: "⚙", title: "Manutenção" },
+    "/moradores": { icon: "👤", title: "Moradores" },
+    "/prestadores": { icon: "🔨", title: "Prestadores" },
+    "/instrucoes": { icon: "☑", title: "Instruções" },
+    "/emergencias": { icon: "🚨", title: "Emergências" },
+    "/gardia-ai": { icon: "✦", title: "Gardia AI" },
+    "/configuracoes": { icon: "⚙", title: "Configurações" },
+  };
+
+  return map[route] || { icon: "•", title: formatRouteTitle(route) };
+}
+
+function registrarAtalhoVoz() {
+  document.addEventListener("keydown", (e) => {
+    const tag = document.activeElement?.tagName;
+    if (e.code !== "Space" || tag === "INPUT" || tag === "TEXTAREA" || window._gardiaRec) return;
+
+    e.preventDefault();
+    iniciarReconhecimentoVoz();
+  });
+
+  document.addEventListener("keyup", (e) => {
+    if (e.code !== "Space") return;
+    pararReconhecimentoVoz();
+  });
+}
+
+function iniciarReconhecimentoVoz() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+
+  const rec = new SR();
+  rec.lang = "pt-BR";
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  window._gardiaRec = rec;
+  window.gardiaStatus = "ouvindo";
+  document.body.classList.add("gardia-voice-active");
+
+  rec.onresult = (event) => {
+    const texto = event.results?.[0]?.[0]?.transcript;
+    if (texto) {
+      window.dispatchEvent(new CustomEvent("gardia:voz", { detail: { texto } }));
+    }
+  };
+
+  rec.onend = () => {
+    window._gardiaRec = null;
+    window.gardiaStatus = "inativo";
+    document.body.classList.remove("gardia-voice-active");
+  };
+
+  try {
+    rec.start();
+  } catch (e) {
+    window._gardiaRec = null;
+    window.gardiaStatus = "inativo";
+    document.body.classList.remove("gardia-voice-active");
+    logger.warn("voice-shortcut", e);
+  }
+}
+
+function pararReconhecimentoVoz() {
+  if (!window._gardiaRec) return;
+
+  window.gardiaStatus = "processando";
+  document.body.classList.remove("gardia-voice-active");
+  window._gardiaRec.stop();
+}
+
+window.iniciarReconhecimentoVoz = iniciarReconhecimentoVoz;
+window.pararReconhecimentoVoz = pararReconhecimentoVoz;
 
 async function loadView(route) {
   const loader = viewLoaders[route];
